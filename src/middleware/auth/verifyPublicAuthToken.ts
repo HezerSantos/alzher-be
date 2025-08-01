@@ -6,7 +6,7 @@ import throwError from "../../helpers/errorHelper";
 dotenv.config()
 
 
-const AUTH_SECRET = String(process.env.AUTH_SECRET)
+const PUBLIC_AUTH_SECRET = String(process.env.PUBLIC_AUTH_SECRET)
 
 
 const verifyPublicAuthToken: RequestHandler = async(req, res, next) => {
@@ -16,7 +16,7 @@ const verifyPublicAuthToken: RequestHandler = async(req, res, next) => {
             throwError("Unauthorized", 401, [{msg: "Unauthorized"}])
             return
         }
-        jwt.verify(authCookie, AUTH_SECRET)
+        jwt.verify(authCookie, PUBLIC_AUTH_SECRET)
         next()
     } catch(error){
         const jwtError = error as JsonWebTokenError || Error
