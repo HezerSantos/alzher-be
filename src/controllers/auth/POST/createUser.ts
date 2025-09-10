@@ -20,9 +20,9 @@ const createUser: RequestHandler[] = [
             //         password: req.body.password
             //     }
             // })
-            // return res.json({
-            //     data: "success"
-            // })
+            return res.json({
+                data: "success"
+            })
         } catch (error){
             next(error)
         }
