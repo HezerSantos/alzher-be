@@ -11,6 +11,7 @@ import csrfRouter from './routes/csrf/csrfRouter'
 import robotsRouter from './routes/robots/robotsRouter'
 import secureAuthRouter from './routes/auth/secureAuthRouter'
 import validateCsrf from './middleware/csrf/validateCsrf'
+import verifyUser from './controllers/auth/helpers/auth'
 dotenv.config()
 const app = express()
 app.use("/robots.txt", robotsRouter)
@@ -26,6 +27,11 @@ app.use(verifyPublicAuthToken)
 app.use("/api/csrf", csrfRouter)
 
 app.use("/api/auth/secure", validateCsrf, secureAuthRouter)
+
+app.get("/protected", verifyUser, (req, res, next) => {
+    console.log(req.user)
+    res.json({msg: "success"})
+})
 app.use(errorMiddleware)
 const PORT = Number(process.env.PORT) || 8080
 app.listen(PORT, '0.0.0.0', () => {

@@ -4,34 +4,39 @@ import { validationResult } from "express-validator";
 import throwError from "../../../helpers/errorHelper";
 import prisma from "../../../config/prisma";
 import argon2 from "argon2";
+import jwt from 'jsonwebtoken'
+import dotenv from 'dotenv'
 
+dotenv.config()
+
+const SECURE_AUTH_SECRET = String(process.env.SECURE_AUTH_SECRET)
 
 type AuthenticateUserType = (
     email: string,
     password: string
-) => Promise<boolean>
+) => Promise<{
+    userId: string
+}>
 
 const authenticateUser: AuthenticateUserType = async(email, password) => {
-    let match
     const user = await prisma.user.findUnique({
-        where: {
-            email: email
-        }
-    })
+        where: { email }
+    });
 
-    if(!user){
-        throwError("Auth Error", 401, [{ msg: "Invalid Username or Password"}])
+    // Default fake hash (argon2 format)
+    const fakeHash = "$argon2id$v=19$m=65536,t=3,p=4$C0ZlYXR1cmU$FAKEHASHFAKEHASHFAKEHA";
+
+    // Always verify password, real or fake
+    const hashToVerify = user?.password ?? fakeHash;
+    const match = await argon2.verify(hashToVerify, password);
+
+    if (!match || !user) {
+        throwError("Auth Error", 401, [{ msg: "Invalid Username or Password" }]);
     }
 
-    if(user){
-        match = await argon2.verify(user.password, password)
-    }
-
-    if(match){
-        return true
-    } else {
-        return false
-    }
+    return {
+        userId: String(user?.id)
+    };
 }
 const loginUser: RequestHandler[] = [
     ...validateLoginUser,
@@ -46,16 +51,23 @@ const loginUser: RequestHandler[] = [
             const email = req.body.email
             const password = req.body.password
 
-            const match = await authenticateUser(email, password)
+            const result = await authenticateUser(email, password)
 
-            if(!match){
-                throwError("Auth Error", 401, [{ msg: "Invalid Username or Password"}])
+            const payload = {
+                id: result.userId
             }
-            
-            console.log("login")
-            res.json({
-                data: "success"
+            const secureToken = jwt.sign(payload, SECURE_AUTH_SECRET, {expiresIn: '15m'})
+
+            res.cookie('__Secure-secure-auth.access', secureToken, {
+                httpOnly: true, 
+                secure: true, 
+                maxAge: 15 * 1000 * 60, 
+                sameSite: "none",
+                path: "/",
+                domain: process.env.NODE_ENV === "production"? ".hallowedvisions.com" : ""
             })
+
+            res.end()
         } catch(error) {
             next(error)
         }
@@ -63,38 +75,3 @@ const loginUser: RequestHandler[] = [
 ]
 
 export default loginUser
-
-/*
-
-import { betterAuth } from "better-auth";
-import { betterPrismaAdapter } from "better-auth/adapter-prisma";
-import prisma from "./prisma";
-
-export const auth = betterAuth({
-  database: betterPrismaAdapter(prisma),
-  token: {
-    strategy: "jwt",
-    jwt: {
-      secret: process.env.JWT_SECRET || "your-super-secret",
-      expiresIn: "1h",
-    },
-  },
-  // no `hash` here since you handle hashing yourself
-});
-
-
-const token = await auth.api.createToken({ userId: user.id });
-
-import { fromNodeHeaders } from "better-auth/node";
-
-// inside your route handler, e.g. Express
-const session = await auth.api.getSession({
-  headers: fromNodeHeaders(req.headers),
-});
-
-if (!session) {
-  // token invalid or missing
-  return res.status(401).json({ error: "Unauthorized" });
-}
-
-*/

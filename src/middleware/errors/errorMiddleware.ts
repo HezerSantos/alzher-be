@@ -1,7 +1,7 @@
 import { ErrorRequestHandler } from "express"
 
 const errorMiddleware: ErrorRequestHandler = (err, req, res, next) => {
-    console.error(`Error ${err.status || 500 }: ${err.message || 'Internal Server Error'}`)
+    console.error(`Error ${err.status || 500 }: ${err.message || 'Internal Server Error'} | ${req.method} @ ${req.originalUrl}`)
     res.status(err.status || 500).json({
       errors: err.status === 400? err.json.errors : err.json || [{msg: 'Internal Server Error'}],
     });
