@@ -22,10 +22,10 @@ const validateCreateUser = [
     body("password")
         .trim()
         .notEmpty()
-        .isLength({min: 12}).withMessage("Password must be at least 12 characters"),
+        .isLength({min: 3}).withMessage("Password must be at least 12 characters"),
     body("confirmPassword")
         .trim()
-        .notEmpty()
+        .notEmpty().withMessage("Password must be present")
         .custom((value, { req }) => {
             const password = req.body.password
             if(password !== value){

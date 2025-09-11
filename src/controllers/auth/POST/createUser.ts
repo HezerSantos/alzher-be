@@ -3,23 +3,26 @@ import validateCreateUser from "../../../validation/auth/validateCreateUser";
 import { validationResult } from "express-validator";
 import throwError from "../../../helpers/errorHelper";
 import prisma from "../../../config/prisma";
+import argon2 from "argon2";
 
 const createUser: RequestHandler[] = [
     ...validateCreateUser,
     async (req, res, next) => {
         try{
             const errors = validationResult(req)
-            console.log(errors.array())
             if(!errors.isEmpty()){
                 throwError("Auth Error", 400, {errors: errors.array()})
             }
 
-            // await prisma.user.create({
-            //     data: {
-            //         email: req.body.email,
-            //         password: req.body.password
-            //     }
-            // })
+            const password = req.body.password
+            const hashedPassowrd = await argon2.hash(password)
+
+            await prisma.user.create({
+                data: {
+                    email: req.body.email,
+                    password: hashedPassowrd
+                }
+            })
             return res.json({
                 data: "success"
             })
