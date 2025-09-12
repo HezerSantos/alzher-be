@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import jwt from 'jsonwebtoken'
+import jwt, { JsonWebTokenError } from 'jsonwebtoken'
 import dotenv from 'dotenv'
 import throwError from "../../../helpers/errorHelper";
 dotenv.config()
@@ -19,6 +19,9 @@ const verifyUser: RequestHandler = (req, res, next) => {
 
         next()
     } catch(error) {
+        if(error instanceof JsonWebTokenError){
+            error.message
+        }
         next(error)
     }
 }

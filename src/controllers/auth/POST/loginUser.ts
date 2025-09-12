@@ -10,7 +10,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 const SECURE_AUTH_SECRET = String(process.env.SECURE_AUTH_SECRET)
-
+const REFRESH_SECURE_AUTH_SECRET = String(process.env.REFRESH_SECURE_AUTH_SECRET)
 type AuthenticateUserType = (
     email: string,
     password: string
@@ -56,9 +56,20 @@ const loginUser: RequestHandler[] = [
             const payload = {
                 id: result.userId
             }
+
             const secureToken = jwt.sign(payload, SECURE_AUTH_SECRET, {expiresIn: '15m'})
+            const secureRefreshToken = jwt.sign(payload, REFRESH_SECURE_AUTH_SECRET, {expiresIn: "7d"})
 
             res.cookie('__Secure-secure-auth.access', secureToken, {
+                httpOnly: true, 
+                secure: true, 
+                maxAge: 15 * 1000 * 60, 
+                sameSite: "none",
+                path: "/",
+                domain: process.env.NODE_ENV === "production"? ".hallowedvisions.com" : ""
+            })
+            
+            res.cookie('__Secure-secure-auth.access.refresh', secureRefreshToken, {
                 httpOnly: true, 
                 secure: true, 
                 maxAge: 15 * 1000 * 60, 
