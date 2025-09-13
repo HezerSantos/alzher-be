@@ -10,7 +10,7 @@ const verifyUser: RequestHandler = (req, res, next) => {
         const secureAuthCookie = req.cookies['__Secure-secure-auth.access']
 
         if(!secureAuthCookie){
-            throwError("Unauthorized", 401, {msg: "Unauthorized", code: "AUTH_INVALID_TOKEN"})
+            throwError("Unauthorized", 401, {msg: "Unauthorized", code: "INVALID_ACCESS_TOKEN"})
         }
         const access = jwt.verify(secureAuthCookie, SECURE_AUTH_SECRET)
         
@@ -20,7 +20,7 @@ const verifyUser: RequestHandler = (req, res, next) => {
         next()
     } catch(error) {
         if(error instanceof JsonWebTokenError){
-            throwError("Unauthorized", 401, {msg: "Unauthorized", code: "AUTH_INVALID_TOKEN"})
+            throwError("Unauthorized", 401, {msg: "Unauthorized", code: "INVALID_ACCESS_TOKEN"})
         } else {
             next(error)
         }  
