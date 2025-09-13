@@ -31,7 +31,7 @@ const authenticateUser: AuthenticateUserType = async(email, password) => {
     const match = await argon2.verify(hashToVerify, password);
 
     if (!match || !user) {
-        throwError("Auth Error", 401, [{ msg: "Invalid Username or Password" }]);
+        throwError("Auth Error", 401, { msg: "Invalid Username or Password", code: "AUTH_INVALID_CREDENTIALS" });
     }
 
     return {

@@ -18,6 +18,7 @@ class HttpError extends Error implements HttpErrorDetails{
     super(message)
     this.status = status
     this.json = json
+
     Object.setPrototypeOf(this, HttpError.prototype)
   }
 }
