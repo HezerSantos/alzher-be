@@ -36,7 +36,6 @@ const getSecureAuthToken: RequestHandler = async(req, res, next) => {
                 path: "/",
                 domain: process.env.NODE_ENV === "production"? ".hallowedvisions.com" : ""
             })
-            
         res.end()
     } catch(error){
         if(error instanceof JsonWebTokenError){
