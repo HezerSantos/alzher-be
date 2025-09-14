@@ -59,7 +59,6 @@ const loginUser: RequestHandler[] = [
 
             const secureToken = jwt.sign(payload, SECURE_AUTH_SECRET, {expiresIn: '15m'})
             const secureRefreshToken = jwt.sign(payload, REFRESH_SECURE_AUTH_SECRET, {expiresIn: "7d"})
-
             res.cookie('__Secure-secure-auth.access', secureToken, {
                 httpOnly: true, 
                 secure: true, 
@@ -72,7 +71,7 @@ const loginUser: RequestHandler[] = [
             res.cookie('__Secure-secure-auth.access.refresh', secureRefreshToken, {
                 httpOnly: true, 
                 secure: true, 
-                maxAge: 15 * 1000 * 60, 
+                maxAge: 604800000, 
                 sameSite: "none",
                 path: "/",
                 domain: process.env.NODE_ENV === "production"? ".hallowedvisions.com" : ""
