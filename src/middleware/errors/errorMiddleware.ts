@@ -14,7 +14,9 @@ const errorMiddleware: ErrorRequestHandler = (err, req, res, next) => {
     
     
     res.status(err.status || 500).json({
-      errors: err.status === 400? err.json.errors : err.json || [{msg: 'Internal Server Error'}],
+      errors: (err.status === 400 && err.json?.errors) 
+          ? err.json.errors 
+          : (err.json || [{ msg: 'Internal Server Error' }]),
     });
 }
 
