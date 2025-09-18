@@ -4,6 +4,14 @@ import { RequestHandler } from "express";
 import fileType from 'file-type';
 import throwError from "../../../helpers/errorHelper";
 
+interface Transactons {
+    date: string,
+    year: string,
+    description: string,
+    price: string,
+    category: string
+}
+
 const postDashboardDocument: RequestHandler = async(req, res, next) => {
     try{
         const files = req.files as Express.Multer.File[]
@@ -24,12 +32,19 @@ const postDashboardDocument: RequestHandler = async(req, res, next) => {
 
         
         try{
-            await axios.post("http://localhost:5000/dashboard/scan/predict",
+            const res = await axios.post("http://localhost:5000/dashboard/scan/predict",
                 formData,
                 {
                     headers: formData.getHeaders()
                 }
             )
+            const transactions = res.data as Transactons[]
+            console.log(transactions)
+            const promiseArray = transactions.map(async(transaction) => {
+                return
+            })
+
+            const resolved = await Promise.all(promiseArray)
         } catch (error){
             const axiosError = error as AxiosError
            if(axiosError.status === 400){
