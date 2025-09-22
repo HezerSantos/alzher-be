@@ -3,19 +3,22 @@ import FormData from "form-data";
 import { RequestHandler } from "express";
 import fileType from 'file-type';
 import throwError from "../../../helpers/errorHelper";
+import prisma from "../../../config/prisma";
 
 interface Transactons {
-    date: string,
-    year: string,
+    month: string,
+    day: number,
+    year: number,
     description: string,
-    price: string,
+    price: number,
     category: string
 }
+
+
 
 const postDashboardDocument: RequestHandler = async(req, res, next) => {
     try{
         const files = req.files as Express.Multer.File[]
-        
         if(files.length === 0 || !files){
             throwError("No Files Provided", 400, {msg: 'At leas one file must be uploaded', code: "MISSING_REQUIRED_FILE"})
         }
@@ -39,21 +42,33 @@ const postDashboardDocument: RequestHandler = async(req, res, next) => {
                 }
             )
             const transactions = res.data as Transactons[]
-            console.log(transactions)
             const promiseArray = transactions.map(async(transaction) => {
-                return
+                
+                return await prisma.transaction.create({
+                    data: {
+                        category: transaction.category,
+                        month: transaction.month,
+                        day: transaction.day,
+                        year: transaction.year,
+                        description: transaction.description,
+                        amount: transaction.price,
+                        userId: req.user.id
+                    }
+                })
             })
 
-            const resolved = await Promise.all(promiseArray)
+            await Promise.all(promiseArray)
         } catch (error){
             const axiosError = error as AxiosError
            if(axiosError.status === 400){
             throwError("Invalid File Content", 400, {msg: "Unable to process statement", code: "INVALID_PROCESS"})
+           } else {
+            throw error
            }
         }
         
 
-        res.end()
+        res.json({msg: "Successfully Added Data", code: "VALID_PROCESS"})
     } catch (error){
         next(error)
     }
