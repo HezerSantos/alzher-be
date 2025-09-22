@@ -42,6 +42,8 @@ const postDashboardDocument: RequestHandler = async(req, res, next) => {
                 }
             )
             const transactions = res.data as Transactons[]
+            // console.log(transactions)
+            // console.log(transactions.length)
             const promiseArray = transactions.map(async(transaction) => {
                 
                 return await prisma.transaction.create({
