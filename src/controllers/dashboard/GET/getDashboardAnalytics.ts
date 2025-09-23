@@ -44,6 +44,7 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             by: ['year'],
             where: { userId: userId },
             _sum: { amount: true },
+            orderBy: { year: 'desc' }
         })
 
 
@@ -161,6 +162,17 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             }
         ]
 
+
+        
+        //Data for yearly line chart
+        const yearlyLineChart = yearlySums.map((year) => {
+            return {
+                year: year.year,
+                total: year._sum.amount
+            }
+        }) 
+
+        
 
         console.timeEnd("Analytics")
         res.end()
