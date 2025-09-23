@@ -51,6 +51,7 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             return acc
         }, 0) / yearlySums.length
 
+        //Returns the largest month by sum
         const largestMonthlyExpense = await prisma.transaction.groupBy({
             by: ['month'],
             where: { userId: userId },
@@ -58,7 +59,24 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             orderBy: { _sum: { amount: 'desc' } },
             take: 1
         })
-        console.log(largestMonthlyExpense)
+        
+        
+        //Returns the total monthly expense
+        const monthlyExpense = await prisma.transaction.groupBy({
+            by: ['month'],
+            where: { userId: userId },
+            _sum: { amount: true }
+        })
+
+        //Returns the average monthly expense
+        const averageMonthlyExpense = monthlyExpense.reduce((acc, month) => {
+            acc = acc + Number( month._sum.amount)
+            return acc
+        }, 0) / monthlyExpense.length
+
+        console.log(totalSpent)
+        console.log(averageMonthlyExpense)
+
         res.end()
     } catch(error){
         next(error)
