@@ -172,7 +172,13 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             }
         }) 
 
+        const bar = await prisma.transaction.groupBy({
+            by: ['month', 'year'],
+            where: { userId: userId },
+            _sum: { amount: true}
+        })
         
+        console.log(bar)
 
         console.timeEnd("Analytics")
         res.end()
