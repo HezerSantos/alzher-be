@@ -175,7 +175,7 @@ const getDashboardOverview: RequestHandler = async(req, res, next) => {
                         value: peakMonth
                     },
                     {
-                        heading: "Highest Category",
+                        heading: "Largest Expense",
                         value: highestCategory
                     }
                 ]
