@@ -3,11 +3,12 @@ import prisma from "../../../config/prisma";
 
 const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
     try{
+        console.time("Analytics")
         const userId = req.user.userId
         
 
         //TOTAL SPENT
-        const totalSpent = await prisma.transaction.aggregate({
+        const totalSpentPromises =  prisma.transaction.aggregate({
             where: {
                 userId: userId
             },
@@ -17,7 +18,7 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
         })
 
         //Returns the most frequent category
-        const mostFrequentCategory = await prisma.transaction.groupBy({
+        const mostFrequentCategoryPromises = prisma.transaction.groupBy({
             by: ['category'],  
             where: { userId: userId },    
             _count: { category: true }, 
@@ -26,7 +27,7 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
         }) ?? []
         
         //Returns the category that is most spent
-        const largestCategoryExpense = await prisma.transaction.groupBy({
+        const largestCategoryExpensePromises = prisma.transaction.groupBy({ 
             by: ['category'],
             where: {
                 userId: userId  
@@ -39,20 +40,16 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
         })
         
         //Queries the yearly sums
-        const yearlySums = await prisma.transaction.groupBy({
+        const yearlySumsPromises = prisma.transaction.groupBy({
             by: ['year'],
             where: { userId: userId },
             _sum: { amount: true },
         })
 
-        //Calculates the yearly average
-        const yearlyAverage = yearlySums.reduce((acc, year) => {
-            acc = acc + Number(year._sum.amount)
-            return acc
-        }, 0) / yearlySums.length
+
 
         //Returns the largest month by sum
-        const largestMonthlyExpense = await prisma.transaction.groupBy({
+        const largestMonthlyExpensePromises = prisma.transaction.groupBy({
             by: ['month'],
             where: { userId: userId },
             _sum: { amount: true },
@@ -62,22 +59,17 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
         
         
         //Returns the total monthly expense
-        const monthlyExpense = await prisma.transaction.groupBy({
+        const monthlyExpensePromises = prisma.transaction.groupBy({
             by: ['month'],
             where: { userId: userId },
             _sum: { amount: true }
         })
 
-        //Returns the average monthly expense
-        const averageMonthlyExpense = monthlyExpense.reduce((acc, month) => {
-            acc = acc + Number( month._sum.amount)
-            return acc
-        }, 0) / monthlyExpense.length
 
         
         //Returns a spendingPerDay[] ordered by desc
 
-        const spendingsPerDay = await prisma.transaction.groupBy({
+        const spendingsPerDayPromises = prisma.transaction.groupBy({
             by:['day'],
             where: { userId: userId },
             _sum: {
@@ -86,19 +78,46 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             orderBy: {_sum: { amount: 'desc' } }
         })  
 
-        //Highest Day and Lowest Day
-        const highestDay = spendingsPerDay[0].day
-        const lowestDay = spendingsPerDay[spendingsPerDay.length - 1].day
 
-        const totalTransactionCount = await prisma.transaction.aggregate({
+        const totalTransactionCountPromises = prisma.transaction.aggregate({
             where: {
                 userId: userId
             },
            _count: true
         })
 
+        const [
+            totalSpent, 
+            mostFrequentCategory, 
+            largestCategoryExpense, 
+            yearlySums, 
+            largestMonthlyExpense, 
+            monthlyExpense, 
+            spendingsPerDay,
+            totalTransactionCount 
+        ] = await Promise.all([totalSpentPromises, mostFrequentCategoryPromises, largestCategoryExpensePromises, yearlySumsPromises, largestMonthlyExpensePromises, monthlyExpensePromises, spendingsPerDayPromises, totalTransactionCountPromises])
 
-    interface DashboardAnalyticsInfoType {
+        //Calculates the yearly average
+        const yearlyAverage = yearlySums.reduce((acc, year) => { //YEARLY SUMS PROMISES
+            acc = acc + Number(year._sum.amount)
+            return acc
+        }, 0) / yearlySums.length
+
+
+        //Returns the average monthly expense
+        const averageMonthlyExpense = monthlyExpense.reduce((acc, month) => { //MONTHLY EXPENSE PROMISES
+            acc = acc + Number( month._sum.amount)
+            return acc
+        }, 0) / monthlyExpense.length
+
+
+
+        //Highest Day and Lowest Day
+        const highestDay = spendingsPerDay[0].day
+        const lowestDay = spendingsPerDay[spendingsPerDay.length - 1].day
+
+
+        interface DashboardAnalyticsInfoType {
             header: string,
             amountSpent: number | null,
             primarySubHeader: string | null,
@@ -142,8 +161,8 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             }
         ]
 
-        console.log(dashboardAnalyticsInfo)
 
+        console.timeEnd("Analytics")
         res.end()
     } catch(error){
         next(error)
