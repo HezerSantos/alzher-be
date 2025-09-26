@@ -23,10 +23,10 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             _count: { category: true }, 
             orderBy: { _count: { category: 'desc' } }, 
             take: 1
-        }) ?? []
+        })
         
         //Returns the category that is most spent
-        const largestCategoryExpensePromises = prisma.transaction.groupBy({ 
+        const categoryExpensePromises = prisma.transaction.groupBy({ 
             by: ['category'],
             where: {
                 userId: userId  
@@ -34,17 +34,17 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             _sum:{
                 amount: true
             },
-            orderBy: {_sum: {amount: 'desc'}},
-            take: 1
-        }) ?? []
+            orderBy: {_sum: {amount: 'desc'}}
+        })
         
         //Queries the yearly sums
         const yearlySumsPromises = prisma.transaction.groupBy({
             by: ['year'],
             where: { userId: userId },
             _sum: { amount: true },
+            _count: { year: true },
             orderBy: { year: 'desc' }
-        }) ?? []
+        })
                 
         //Returns the total monthly expense
         const monthlyExpensePromises = prisma.transaction.groupBy({
@@ -52,7 +52,7 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             where: { userId: userId },
             _sum: { amount: true },
             orderBy: { _sum: { amount: 'desc' } },
-        }) ?? []
+        })
 
 
         
@@ -66,7 +66,7 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             },
             _count: { day: true},
             orderBy: {_sum: { amount: 'desc' } }
-        }) ?? []
+        })
 
 
         const totalTransactionCountPromises = prisma.transaction.aggregate({
@@ -79,12 +79,12 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
         const [
             totalSpent, 
             mostFrequentCategory, 
-            largestCategoryExpense, 
+            categoryExpense, 
             yearlySums, 
             monthlyExpense, 
             spendingsPerDay,
             totalTransactionCount 
-        ] = await Promise.all([totalSpentPromises, mostFrequentCategoryPromises, largestCategoryExpensePromises, yearlySumsPromises, monthlyExpensePromises, spendingsPerDayPromises, totalTransactionCountPromises])
+        ] = await Promise.all([totalSpentPromises, mostFrequentCategoryPromises, categoryExpensePromises, yearlySumsPromises, monthlyExpensePromises, spendingsPerDayPromises, totalTransactionCountPromises])
 
         if(totalSpent._sum.amount === null){
             return res.json(null)
@@ -126,7 +126,7 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
                 primarySubHeader: "Frequent Category",
                 primarySubValue: mostFrequentCategory[0].category,
                 secondarySubHeader: "Largest Expense",
-                secondarySubValue: largestCategoryExpense[0].category
+                secondarySubValue: categoryExpense[0].category
             },
             {
                 header: "Yearly Average",
@@ -154,7 +154,6 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             }
         ]
 
-        
         //Data for yearly line chart
         const yearlyLineChart = yearlySums.map((year) => {
             return {
@@ -201,9 +200,38 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             }
         })
 
-        console.log(monthlyBarChartData)
 
-        // console.log(scatterData)
+        const groubedByCategoryYearPromises = prisma.transaction.groupBy({
+            by: ['category', 'year'],
+            where: { userId: userId},
+            _count: {year: true},
+            _sum: { amount: true }
+        })
+        const groubedByCategoryMonthPromises = prisma.transaction.groupBy({
+            by: ['category', 'month'],
+            where: { userId: userId},
+            _sum: { amount: true }
+        })
+        const groubedByCategoryDayPromises = prisma.transaction.groupBy({
+            by: ['category', 'day'],
+            where: { userId: userId},
+            _sum: { amount: true }
+        })
+
+        const uniqueYearPromises = prisma.transaction.findMany({
+            where: { userId: userId },
+            select: { year: true },
+            distinct: ['year']
+        })
+        const [
+            groubedByCategoryYear,
+            groubedByCategoryMonth,
+            groubedByCategoryDay,
+            uniqueYear
+        ] = await Promise.all([groubedByCategoryYearPromises, groubedByCategoryMonthPromises, groubedByCategoryDayPromises, uniqueYearPromises])
+
+        console.log(groubedByCategoryYear)
+
         console.timeEnd("Analytics")
         res.end()
     } catch(error){
