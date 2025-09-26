@@ -1,4 +1,4 @@
-import { RequestHandler } from "express";
+import e, { RequestHandler } from "express";
 import prisma from "../../../config/prisma";
 
 const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
@@ -172,14 +172,26 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             }
         }) 
 
-        const bar = await prisma.transaction.groupBy({
+        const groupedByMonthYearData = await prisma.transaction.groupBy({
             by: ['month', 'year'],
             where: { userId: userId },
             _sum: { amount: true}
         })
-        
-        console.log(bar)
 
+        console.log(groupedByMonthYearData)
+        
+        const cleanedMonthlyYearData = groupedByMonthYearData.reduce((acc, entry) => {
+            if(!acc.has(entry.month)){
+                acc.set(String(entry.month), new Map([ [entry.year, entry._sum.amount] ]))
+                return acc
+            } else {
+                const monthValues = acc.get(entry.month)
+                 monthValues.set(entry.year, entry._sum.amount)
+                 return acc
+            }
+        }, new Map())
+
+        console.log(cleanedMonthlyYearData)
         console.timeEnd("Analytics")
         res.end()
     } catch(error){
