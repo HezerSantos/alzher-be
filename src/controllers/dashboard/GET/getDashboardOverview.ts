@@ -189,7 +189,6 @@ const getDashboardOverview: RequestHandler = async(req, res, next) => {
         
         
 
-
         res.json({
             year: queryYear,
             overviewDetailsItems,
