@@ -10,7 +10,6 @@ const getDashboardOverview: RequestHandler = async(req, res, next) => {
         ])
         const queryYear = req.query.year
         const semester = req.query.semester
-    
         let selectedSemester
         //GET ALL YEARS
         const years: {year: number}[] = await prisma.$queryRaw`
@@ -30,7 +29,6 @@ const getDashboardOverview: RequestHandler = async(req, res, next) => {
         
         //THROW ERROR FOR INVALID QUERY
         if(!mappedYears.has(Number(queryYear)) || (Number(semester) !== 1  && Number(semester) !== 2) ){
-            console.log(queryYear, semester)
             throwError("Bad Request", 400, {msg: "Bad Request", code: "INVALID_QUERY"})
         }
 
@@ -191,6 +189,7 @@ const getDashboardOverview: RequestHandler = async(req, res, next) => {
 
         res.json({
             year: queryYear,
+            semester: Number(semester),
             overviewDetailsItems,
             chartData: chartData.length !== 0? chartData : null,
             monthItems: monthItems.length !==0? monthItems : null,

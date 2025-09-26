@@ -4,8 +4,7 @@ import prisma from "../../../config/prisma";
 const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
     try{
         console.time("Analytics")
-        const userId = req.user.userId
-        
+        const userId = req.user.id
 
         //TOTAL SPENT
         const totalSpentPromises =  prisma.transaction.aggregate({
@@ -37,7 +36,7 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             },
             orderBy: {_sum: {amount: 'desc'}},
             take: 1
-        })
+        }) ?? []
         
         //Queries the yearly sums
         const yearlySumsPromises = prisma.transaction.groupBy({
@@ -45,26 +44,15 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             where: { userId: userId },
             _sum: { amount: true },
             orderBy: { year: 'desc' }
-        })
-
-
-
-        //Returns the largest month by sum
-        const largestMonthlyExpensePromises = prisma.transaction.groupBy({
-            by: ['month'],
-            where: { userId: userId },
-            _sum: { amount: true },
-            orderBy: { _sum: { amount: 'desc' } },
-            take: 1
-        })
-        
-        
+        }) ?? []
+                
         //Returns the total monthly expense
         const monthlyExpensePromises = prisma.transaction.groupBy({
             by: ['month'],
             where: { userId: userId },
-            _sum: { amount: true }
-        })
+            _sum: { amount: true },
+            orderBy: { _sum: { amount: 'desc' } },
+        }) ?? []
 
 
         
@@ -76,8 +64,9 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             _sum: {
                 amount: true
             },
+            _count: { day: true},
             orderBy: {_sum: { amount: 'desc' } }
-        })  
+        }) ?? []
 
 
         const totalTransactionCountPromises = prisma.transaction.aggregate({
@@ -92,11 +81,14 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             mostFrequentCategory, 
             largestCategoryExpense, 
             yearlySums, 
-            largestMonthlyExpense, 
             monthlyExpense, 
             spendingsPerDay,
             totalTransactionCount 
-        ] = await Promise.all([totalSpentPromises, mostFrequentCategoryPromises, largestCategoryExpensePromises, yearlySumsPromises, largestMonthlyExpensePromises, monthlyExpensePromises, spendingsPerDayPromises, totalTransactionCountPromises])
+        ] = await Promise.all([totalSpentPromises, mostFrequentCategoryPromises, largestCategoryExpensePromises, yearlySumsPromises, monthlyExpensePromises, spendingsPerDayPromises, totalTransactionCountPromises])
+
+        if(totalSpent._sum.amount === null){
+            return res.json(null)
+        }
 
         //Calculates the yearly average
         const yearlyAverage = yearlySums.reduce((acc, year) => { //YEARLY SUMS PROMISES
@@ -114,8 +106,8 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
 
 
         //Highest Day and Lowest Day
-        const highestDay = spendingsPerDay[0].day
-        const lowestDay = spendingsPerDay[spendingsPerDay.length - 1].day
+        const highestDay = spendingsPerDay[0]?.day
+        const lowestDay = spendingsPerDay[spendingsPerDay.length - 1]?.day
 
 
         interface DashboardAnalyticsInfoType {
@@ -140,7 +132,7 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
                 header: "Yearly Average",
                 amountSpent: yearlyAverage,
                 primarySubHeader: "Peak Month",
-                primarySubValue: largestMonthlyExpense[0].month,
+                primarySubValue: monthlyExpense[0].month,
                 secondarySubHeader: null,
                 secondarySubValue: null
             },
@@ -162,7 +154,6 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             }
         ]
 
-
         
         //Data for yearly line chart
         const yearlyLineChart = yearlySums.map((year) => {
@@ -172,14 +163,15 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             }
         }) 
 
+        //Returns the monthly data grouped by year
         const groupedByMonthYearData = await prisma.transaction.groupBy({
             by: ['month', 'year'],
             where: { userId: userId },
-            _sum: { amount: true}
+            _sum: { amount: true},
+            orderBy: {year: 'desc'}
         })
-
-        console.log(groupedByMonthYearData)
         
+        //Turns monthly data grouped by year into a hash map of [month, Map<year, value>]
         const cleanedMonthlyYearData = groupedByMonthYearData.reduce((acc, entry) => {
             if(!acc.has(entry.month)){
                 acc.set(String(entry.month), new Map([ [entry.year, entry._sum.amount] ]))
@@ -191,7 +183,27 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             }
         }, new Map())
 
-        console.log(cleanedMonthlyYearData)
+        //Maps into monthly bar chart data
+        const monthlyBarChartData = [...cleanedMonthlyYearData].map(([month, yearMap], index) => {
+            const targetedYears = [...yearMap].slice(0,2)
+            return {
+                month: month,
+                [targetedYears[0][0]]: targetedYears[0][1],
+                ...(targetedYears[1] ? { [targetedYears[1][0]]: targetedYears[1][1] } : {})
+            }
+        })
+        
+        //Scatter Data
+        const scatterData = spendingsPerDay.map(day => {
+            return{
+                dailyAverage: Number(day._sum.amount) / day._count.day,
+                dateOfMonth: day.day
+            }
+        })
+
+        console.log(monthlyBarChartData)
+
+        // console.log(scatterData)
         console.timeEnd("Analytics")
         res.end()
     } catch(error){
