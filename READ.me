@@ -19,6 +19,20 @@ ERRORS = [
                     /api/auth/public
                 ]
             ]
+        },
+        {
+            code: "INVALID_REFRESH_TOKEN",
+            description: "Secure refresh token is not present or valid.",
+            routes: [
+                /api/auth/secure/refresh
+            ]
+        }
+        {
+            code: "INVALID_CREDENTIALS",
+            description: "The provided credentials are invalid."
+            routes: [
+                /api/auth/secure/login
+            ]
         }
     ],
     400: [

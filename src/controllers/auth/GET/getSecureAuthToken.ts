@@ -19,7 +19,7 @@ const getSecureAuthToken: RequestHandler = async(req, res, next) => {
         const refreshToken = req.cookies['__Secure-secure-auth.access.refresh']
 
         if(!refreshToken){
-            throwError("Unauthorized", 401, {msg: "Unauthorized", code: "AUTH_INVALID_TOKEN"})
+            throwError("Unauthorized", 401, {msg: "Unauthorized", code: "INVALID_REFRESH_TOKEN"})
         }
 
         const refreshPayload = jwt.verify(refreshToken, REFRESH_SECURE_AUTH_SECRET) as TokenType
@@ -39,7 +39,7 @@ const getSecureAuthToken: RequestHandler = async(req, res, next) => {
         res.end()
     } catch(error){
         if(error instanceof JsonWebTokenError){
-            throwError("Unauthorized", 401, {msg: "Unauthorized", code: "AUTH_INVALID_TOKEN"})
+            throwError("Unauthorized", 401,{msg: "Unauthorized", code: "INVALID_REFRESH_TOKEN"})
         } else {
             next(error)
         }  
