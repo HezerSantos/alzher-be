@@ -1,0 +1,66 @@
+DOCUMENTATION
+
+
+ERRORS = [
+    401: [
+        {
+            code: "INVALID_ACCESS_TOKEN",
+            description: "Secure access token is not present or valid.",
+            routes: [
+                /api/dashboard/*
+            ]
+        },
+        {
+            code: "INVALID_ENTRY_TOKEN",
+            description: "Public access token is not present or valid.",
+            routes: [
+                /api/*,
+                excludes: [
+                    /api/auth/public
+                ]
+            ]
+        }
+    ],
+    400: [
+        {
+            code: "INVALID_CREDENTIALS",
+            description: "The provided credentials are invalid or missing.",
+            routes: [
+                /api/auth/secure/*
+            ]
+        },
+        {
+            code: "INVALID_QUERY",
+            description: "The provided query parameters are invalid or missing.",
+            routes: [
+                /api/dashboard/overview
+            ]
+        },{
+            code: "INVALID_FILE_TYPE",
+            description: "The provided files have invalid types.",
+            routes: [
+                /api/dashboard/scan
+            ]
+        },
+        {
+            code: "INVALID_PROCESS",
+            description: "The provided response from FastAPI returned an empty array of transactions",
+            routes: [
+                /api/dashboard/scan
+            ]
+        }
+    ],
+    403: [
+        {
+            code: "INVALID_PERMISSIONS",
+            description: "CSRF token is not present or valid.",
+            routes: [
+                /api/*,
+                excludes: [
+                    /api/auth/public,
+                    /api/csrf
+                ]
+            ]
+        }
+    ]
+]

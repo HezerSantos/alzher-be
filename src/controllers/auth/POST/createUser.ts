@@ -11,7 +11,7 @@ const createUser: RequestHandler[] = [
         try{
             const errors = validationResult(req)
             if(!errors.isEmpty()){
-                throwError("Auth Error", 400, {errors: errors.array()})
+                throwError("Auth Error", 400, { msg: "Invalid Credentials", code:"INVALID_CREDENTIALS", validationErrors: errors.array() })
             }
 
             const password = req.body.password

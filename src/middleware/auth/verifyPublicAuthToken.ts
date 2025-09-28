@@ -13,7 +13,7 @@ const verifyPublicAuthToken: RequestHandler = async(req, res, next) => {
     try{
         const authCookie = req.cookies['__Secure-public-auth.access']
         if(!authCookie){
-            throwError("Unauthorized", 401, [{msg: "Unauthorized"}])
+            throwError("Unauthorized", 401, {msg: "Unauthorized", code: "INVALID_ENTRY_TOKEN"})
             return
         }
         jwt.verify(authCookie, PUBLIC_AUTH_SECRET)
@@ -21,7 +21,7 @@ const verifyPublicAuthToken: RequestHandler = async(req, res, next) => {
     } catch(error){
         const jwtError = error as JsonWebTokenError || Error
         if(jwtError.name === 'JsonWebTokenError' || jwtError.name === 'TokenExpiredError'){
-            throwError("401", 401, [{msg: "Unauthorized"}])
+            throwError("Unauthorized", 401, {msg: "Unauthorized", code: "INVALID_ENTRY_TOKEN"})
         } else {
             next(error)
         }

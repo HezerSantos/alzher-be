@@ -45,7 +45,7 @@ const loginUser: RequestHandler[] = [
             const errors = validationResult(req)
 
             if(!errors.isEmpty()) {
-                throwError("Invalid username or password", 400, { errors: errors.array() })
+                throwError("Invalid username or password", 400, { msg: "Invalid Credentials", code:"INVALID_CREDENTIALS", validationErrors: errors.array() })
             }
 
             const email = req.body.email
