@@ -15,7 +15,7 @@ const verifyUser: RequestHandler = (req, res, next) => {
         const access = jwt.verify(secureAuthCookie, SECURE_AUTH_SECRET)
         
         req.user = access
-        
+
 
         next()
     } catch(error) {
