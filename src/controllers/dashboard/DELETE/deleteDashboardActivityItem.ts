@@ -6,7 +6,7 @@ const deleteDashboardActivityItem: RequestHandler = async(req, res, next) => {
     try{
         const userId = req.user.id
 
-        const transactionId = req.body.transactionId
+        const transactionId = req.params.id
 
         const transaction = await prisma.transaction.findUnique({
             where: { id: transactionId }
