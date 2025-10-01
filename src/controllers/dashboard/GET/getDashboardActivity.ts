@@ -51,7 +51,7 @@ const getDashboardActivity: RequestHandler = async(req, res, next) => {
 
         res.json({
             transactionData: mappedTransactions? mappedTransactions : transactions,
-            previousPageFlag: ( page || 1 ) > 1,
+            previousPageFlag: transactions.length === 0? false : ( page || 1 ) > 1,
             nextPageFlag: ( page || 1 ) < (maxPages._count / (pageSize || 10))
         })
     } catch(error){
