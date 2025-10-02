@@ -24,6 +24,8 @@ const getDashboardActivity: RequestHandler = async(req, res, next) => {
         const pageSize = Number(req.query.pageSize)
         const page = Number(req.query.page)
         const categoryFilter = req.query.categoryFilter
+        const keyWord = req.query.keyWord
+        
 
         const whereOptions: any = {
             userId: userId,
@@ -32,6 +34,14 @@ const getDashboardActivity: RequestHandler = async(req, res, next) => {
         if(categoryFilter){
             whereOptions.category = categoryFilter
         }
+
+        if(keyWord){
+            whereOptions.description = {
+                contains: keyWord,
+                mode: 'insensitive'
+            }
+        }
+
         const transactions = await prisma.transaction.findMany({
             where: whereOptions,
             skip: ((page - 1) * pageSize) || 0,
@@ -40,7 +50,7 @@ const getDashboardActivity: RequestHandler = async(req, res, next) => {
         })
 
         const maxPages = await prisma.transaction.aggregate({
-            where: {userId: userId},
+            where: whereOptions,
             _count: true
         })
 
@@ -56,8 +66,7 @@ const getDashboardActivity: RequestHandler = async(req, res, next) => {
 
                 }
             })
-        }
-
+        }   
         res.json({
             transactionData: mappedTransactions? mappedTransactions : null,
             previousPageFlag: transactions.length === 0? false : ( page || 1 ) > 1,
