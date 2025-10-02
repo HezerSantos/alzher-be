@@ -46,7 +46,9 @@ const patchDashboardActivityItem: RequestHandler = async(req, res, next) => {
         }
 
         const filteredTransactionData = Object.fromEntries(Object.entries(updatedTransactionData).filter(([key, value]) => value !== undefined))
-        console.log(filteredTransactionData)
+        if(Object.keys(filteredTransactionData).length === 0){
+            return res.end()
+        }
         await prisma.transaction.update({
             where: { id: transactionId},
             data: filteredTransactionData

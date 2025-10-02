@@ -23,8 +23,17 @@ const getDashboardActivity: RequestHandler = async(req, res, next) => {
         const userId = req.user.id
         const pageSize = Number(req.query.pageSize)
         const page = Number(req.query.page)
+        const categoryFilter = req.query.categoryFilter
+
+        const whereOptions: any = {
+            userId: userId,
+        }
+
+        if(categoryFilter){
+            whereOptions.category = categoryFilter
+        }
         const transactions = await prisma.transaction.findMany({
-            where: {userId: userId},
+            where: whereOptions,
             skip: ((page - 1) * pageSize) || 0,
             take: pageSize || 10,
             orderBy: { amount: 'desc' }
@@ -50,9 +59,9 @@ const getDashboardActivity: RequestHandler = async(req, res, next) => {
         }
 
         res.json({
-            transactionData: mappedTransactions? mappedTransactions : transactions,
+            transactionData: mappedTransactions? mappedTransactions : null,
             previousPageFlag: transactions.length === 0? false : ( page || 1 ) > 1,
-            nextPageFlag: ( page || 1 ) < (maxPages._count / (pageSize || 10))
+            nextPageFlag: transactions.length === 0? false : ( page || 1 ) < (maxPages._count / (pageSize || 10))
         })
     } catch(error){
         next(error)
