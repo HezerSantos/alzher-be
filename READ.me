@@ -62,6 +62,13 @@ ERRORS = [
             routes: [
                 /api/dashboard/scan
             ]
+        },
+        {
+            code: "INVALID_BODY"
+            description: "The provided request body contains missing or invalid fields."
+            routes: [
+                /api/dashboard\/activity\/.*/
+            ]
         }
     ],
     403: [
