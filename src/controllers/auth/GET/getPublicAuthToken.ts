@@ -27,11 +27,11 @@ const getPublicAuthToken: RequestHandler = async(req, res, next) => {
         const origin = req.headers.origin || ''
         const userAgent = String(req.headers["user-agent"])
         if(origin !== (process.env.NODE_ENV === "production"? process.env.CLIENT_URL : "http://localhost:5173")){
-            throwError("Forbidden", 403, [{msg: "Unauthorized"}])
+            throwError("Forbidden", 403, {msg: "Unauthorized", code: "INVALID_CLEARANCE"})
             return
         }
         if(blockedUserAgents.has(userAgent) || !userAgent){
-            throwError("Forbidden", 403, [{msg: "Unauthorized"}])
+            throwError("Forbidden", 403, {msg: "Unauthorized", code: "INVALID_CLEARANCE"})
             return
         }
 
