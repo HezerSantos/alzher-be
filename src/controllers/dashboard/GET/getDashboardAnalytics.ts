@@ -248,7 +248,6 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
             }
         })
 
-
         res.json({
             dashboardAnalyticsInfo: dashboardAnalyticsInfo,
             yearlyData: yearlyLineChart.reverse(),
