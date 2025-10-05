@@ -185,7 +185,24 @@ const getDashboardOverview: RequestHandler = async(req, res, next) => {
             }
         ]
         
+        const categoryData = await prisma.transaction.groupBy({
+            by: ['category', 'year'],
+            where: {userId: req.user.id, year: Number(queryYear)},
+            _sum: { amount: true },
+            _count: { _all: true},
+            orderBy: { _sum: {amount: 'desc'}}
+        })
+
         
+        
+        const categoryOverview = categoryData.map((category) => {
+            return {
+                name: category.category,
+                amount: category._sum.amount,
+                totalTransactions: category._count._all,
+                percent: (Number(category._sum.amount) / Number(userAggregate._sum.amount)) * 100
+            }
+        })
 
         res.json({
             year: queryYear,
@@ -193,7 +210,8 @@ const getDashboardOverview: RequestHandler = async(req, res, next) => {
             overviewDetailsItems,
             chartData: chartData.length !== 0? chartData : null,
             monthItems: monthItems.length !==0? monthItems : null,
-            yearList: Array.from(mappedYears)
+            yearList: Array.from(mappedYears),
+            categoryOverview: categoryOverview
         })
     } catch(error){
         next(error)
