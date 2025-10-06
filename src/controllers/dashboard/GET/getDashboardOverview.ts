@@ -43,7 +43,8 @@ const getDashboardOverview: RequestHandler = async(req, res, next) => {
             },
             _sum: {
                 amount: true
-            }
+            },
+            _count: { _all: true }
         })
 
         //PROMISE TO GET ALL THE MONTHS OF THE YEAR
@@ -182,6 +183,10 @@ const getDashboardOverview: RequestHandler = async(req, res, next) => {
             {
                 header: "Monthly Average",
                 price: (Number(userAggregate._sum.amount) / distinctMonths.length).toFixed(2)
+            },
+            {
+                header: "Total Transactions",
+                price: userAggregate._count._all
             }
         ]
         
