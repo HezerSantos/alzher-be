@@ -26,12 +26,19 @@ ERRORS = [
             routes: [
                 /api/auth/secure/refresh
             ]
-        }
+        },
         {
             code: "INVALID_CREDENTIALS",
             description: "The provided credentials are invalid."
             routes: [
                 /api/auth/secure/login
+            ]
+        },
+        {
+            code: "INVALID_SESSION",
+            description: "The user is not logged in",
+            routes: [
+                /api/auth/secure/validate
             ]
         }
     ],
