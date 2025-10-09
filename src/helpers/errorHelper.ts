@@ -8,7 +8,7 @@ interface ErrorDetails {
 interface JsonResponseType {
       msg: string,
       code: string,
-      validationErrors?: ValidationError[]
+      validationErrors?: ValidationError[] | {path: string, msg: string}[]
   }
 interface HttpErrorDetails {
     message: string,
