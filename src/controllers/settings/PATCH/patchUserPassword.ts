@@ -1,8 +1,8 @@
 import { RequestHandler } from "express";
-import validatePatchPassword from "../../validation/dashboard/validatePatchPassword";
 import { validationResult } from "express-validator";
-import throwError from "../../helpers/errorHelper";
-import prisma from "../../config/prisma";
+import validatePatchPassword from "../../../validation/dashboard/validatePatchPassword";
+import throwError from "../../../helpers/errorHelper";
+import prisma from "../../../config/prisma";
 import argon from 'argon2'
 const patchUserPassword: RequestHandler[] = [
     ...validatePatchPassword,
@@ -11,7 +11,7 @@ const patchUserPassword: RequestHandler[] = [
             const userId = req.user.id
             const errors = validationResult(req)
             if(!errors.isEmpty()){
-                throwError("Invalid Credentials", 400, {msg: "Invalid Credentials", code: "INVALID_CREDENTIALS", validationErrors: [{path: "updatePassword", msg: "Passwords Do Not Match"}]})
+                throwError("Invalid Credentials", 400, {msg: "Invalid Credentials", code: "INVALID_CREDENTIALS", validationErrors: [{path: "updateCredentials", msg: "Passwords Do Not Match"}]})
             }
 
             const user = await prisma.user.findUnique({
@@ -22,7 +22,7 @@ const patchUserPassword: RequestHandler[] = [
             const verify = await argon.verify(String(user?.password), req.body.currentPassword)
 
             if(!verify){
-                throwError("Invalid Credentials", 400, {msg: "Invalid Credentials", code: "INVALID_CREDENTIALS", validationErrors: [{path: "updatePassword", msg: "Could Not Update Password"}]})
+                throwError("Invalid Credentials", 400, {msg: "Invalid Credentials", code: "INVALID_CREDENTIALS", validationErrors: [{path: "updateCredentials", msg: "Could Not Update Password"}]})
             }
 
             const newPassword = req.body.password

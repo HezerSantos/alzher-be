@@ -1,5 +1,5 @@
 import { RequestHandler } from "express";
-import prisma from "../../config/prisma";
+import prisma from "../../../config/prisma";
 
 const getSettingsData: RequestHandler = async(req, res, next) => {
     try{
