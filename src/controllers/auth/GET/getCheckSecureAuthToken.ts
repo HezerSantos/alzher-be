@@ -17,7 +17,7 @@ const getCheckSecureAuthToken: RequestHandler = async(req, res, next) => {
         jwt.verify(secureAuthRefreshToken, REFRESH_SECURE_AUTH_SECRET)
         res.end()
     } catch (error) {
-                if(error instanceof JsonWebTokenError){
+        if(error instanceof JsonWebTokenError){
             throwError("Invalid Session", 401, {msg: "User Not Logged In", code: "INVALID_SESSION"})
         } else {
             next(error)
