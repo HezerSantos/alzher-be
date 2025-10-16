@@ -4,20 +4,25 @@ import { RequestHandler } from "express";
 import fileType from 'file-type';
 import throwError from "../../../helpers/errorHelper";
 import prisma from "../../../config/prisma";
+import crypto from 'crypto';
 
 interface Transactons {
-    month: string,
-    day: number,
-    year: number,
-    description: string,
-    price: number,
-    category: string
+    transactionArray: {
+        month: string,
+        day: number,
+        year: number,
+        description: string,
+        price: number,
+        category: string
+    }[],
+    transactionHashes: string[]
 }
 
 
 
 const postDashboardDocument: RequestHandler = async(req, res, next) => {
     try{
+        const userId = req.user.id
         const files = req.files as Express.Multer.File[]
         if(files.length === 0 || !files){
             throwError("No Files Provided", 400, {msg: 'At leas one file must be uploaded', code: "MISSING_REQUIRED_FILE"})
@@ -33,7 +38,16 @@ const postDashboardDocument: RequestHandler = async(req, res, next) => {
             formData.append('files', file.buffer, file.originalname)
         }
 
-        
+        const hashes = files.map(file => crypto.createHash("sha256").update(file.buffer).digest("hex"))
+
+        const statements = await prisma.statements.findMany({
+            where: { id: { in: hashes } }
+        })
+
+        if (statements.length) {
+            throwError("Existing Files", 409, {msg: "Files already exist", code: "INVALID_DUPLICATE"})
+        }
+
         try{
             const res = await axios.post("http://localhost:5000/dashboard/scan/predict",
                 formData,
@@ -41,10 +55,12 @@ const postDashboardDocument: RequestHandler = async(req, res, next) => {
                     headers: formData.getHeaders()
                 }
             )
-            const transactions = res.data as Transactons[]
+            const transactions = res.data as Transactons
             // console.log(transactions)
             // console.log(transactions.length)
-            const promiseArray = transactions.map(async(transaction) => {
+            // console.log(transactions.transactionHashes)
+            // console.log(hashes)
+            const promiseArray = transactions.transactionArray.map(async(transaction) => {
                 
                 return await prisma.transaction.create({
                     data: {
@@ -60,6 +76,14 @@ const postDashboardDocument: RequestHandler = async(req, res, next) => {
             })
 
             await Promise.all(promiseArray)
+            await prisma.statements.createMany({
+                data: transactions.transactionHashes.map((hash) => {
+                    return {
+                        id: hash,
+                        userId: userId
+                    }
+                })
+            })
         } catch (error){
             const axiosError = error as AxiosError
            if(axiosError.status === 400){

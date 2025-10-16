@@ -21,6 +21,7 @@ model User {
   password String
   createdAt DateTime @default(now())
   transactions Transaction[]
+  statements Statements[]
 }
 
 model Transaction {
@@ -31,6 +32,12 @@ model Transaction {
   day Int
   year Int
   amount Float
+  userId String
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Statements {
+  id String @id
   userId String
   user User @relation(fields: [userId], references: [id])
 }
