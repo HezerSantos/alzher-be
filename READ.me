@@ -90,5 +90,30 @@ ERRORS = [
                 ]
             ]
         }
+    ],
+    413: [
+        {
+            code: "INVALID_UPLOAD",
+            description: "File size or limit has been exceeded or reached.",
+            routes: [
+                /api/dashboard/scan
+            ]
+        }
+    ]
+    429: [
+        {
+            code: "INVALID_DASHBOARD_LIMIT",
+            description: "Dashboard router rate limiter is reached.",
+            routes: [
+                /api/dashboard/*
+            ]
+        },
+        {
+            code: "INVALID_GLOBAL_LIMIT",
+            description: "Pre rate limiter is reached."
+            routes: [
+                /api/*
+            ]
+        }
     ]
 ]
