@@ -103,10 +103,7 @@ const getDashboardAnalytics: RequestHandler = async(req, res, next) => {
 
 
         //Returns the average monthly expense
-        const averageMonthlyExpense = monthlyExpense.reduce((acc, month) => { //MONTHLY EXPENSE PROMISES
-            acc = acc + Number( month._sum.amount)
-            return acc
-        }, 0) / monthlyExpense.length
+        const averageMonthlyExpense = yearlyAverage / monthlyExpense.length
 
 
 
