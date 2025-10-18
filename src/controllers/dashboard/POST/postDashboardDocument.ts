@@ -41,7 +41,7 @@ const postDashboardDocument: RequestHandler = async(req, res, next) => {
         const hashes = files.map(file => crypto.createHash("sha256").update(file.buffer).digest("hex"))
 
         const statements = await prisma.statements.findMany({
-            where: { id: { in: hashes } }
+            where: { statementId: { in: hashes }, userId: userId }
         })
 
         if (statements.length) {
@@ -79,7 +79,7 @@ const postDashboardDocument: RequestHandler = async(req, res, next) => {
             await prisma.statements.createMany({
                 data: transactions.transactionHashes.map((hash) => {
                     return {
-                        id: hash,
+                        statementId: hash,
                         userId: userId
                     }
                 })
