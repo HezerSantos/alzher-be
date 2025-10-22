@@ -52,7 +52,10 @@ const postDashboardDocument: RequestHandler = async(req, res, next) => {
             const res = await axios.post("http://localhost:5000/dashboard/scan/predict",
                 formData,
                 {
-                    headers: formData.getHeaders()
+                    headers: {
+                        ...formData.getHeaders(),
+                        authorization: String(process.env.ML_MICRO_SERVICE_KEY)
+                    }
                 }
             )
             const transactions = res.data as Transactons
@@ -86,11 +89,13 @@ const postDashboardDocument: RequestHandler = async(req, res, next) => {
             })
         } catch (error){
             const axiosError = error as AxiosError
-           if(axiosError.status === 400){
-            throwError("Invalid File Content", 400, {msg: "Unable to process statement", code: "INVALID_PROCESS"})
-           } else {
-            throw error
-           }
+            if(axiosError.status === 400){
+                throwError("Invalid File Content", 400, {msg: "Unable to process statement", code: "INVALID_PROCESS"})
+            } else if (axiosError.status === 401){
+                throwError("Internal Server Error", 500, {msg: "Internal Server Error", code: "INVALID_SERVER"})
+            } else {
+                throw error
+            }
         }
         
 

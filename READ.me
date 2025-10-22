@@ -99,7 +99,7 @@ ERRORS = [
                 /api/dashboard/scan
             ]
         }
-    ]
+    ],
     413: [
         {
             code: "INVALID_UPLOAD",
@@ -108,7 +108,7 @@ ERRORS = [
                 /api/dashboard/scan
             ]
         }
-    ]
+    ],
     429: [
         {
             code: "INVALID_DASHBOARD_LIMIT",
@@ -124,5 +124,12 @@ ERRORS = [
                 /api/*
             ]
         }
+    ],
+    500: [
+        code: "INVALID_SERVER",
+        description: "Internal Server Error",
+        router: [
+            /api/*
+        ]
     ]
 ]
