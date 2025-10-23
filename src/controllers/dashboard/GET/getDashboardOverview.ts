@@ -8,7 +8,7 @@ const getDashboardOverview: RequestHandler = async(req, res, next) => {
             [1, ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']],
             [2, ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']]
         ])
-        const queryYear = req.query.year
+        let queryYear = req.query.year
         const semester = req.query.semester
         let selectedSemester
         //GET ALL YEARS
@@ -28,10 +28,13 @@ const getDashboardOverview: RequestHandler = async(req, res, next) => {
         }
         
         //THROW ERROR FOR INVALID QUERY
-        if(!mappedYears.has(Number(queryYear)) || (Number(semester) !== 1  && Number(semester) !== 2) ){
+        if((Number(semester) !== 1  && Number(semester) !== 2) ){
             throwError("Bad Request", 400, {msg: "Bad Request", code: "INVALID_QUERY"})
         }
 
+        if(!mappedYears.has(Number(queryYear))){
+            queryYear = String([...mappedYears].sort((a, b) => a - b)[mappedYears.size - 1])
+        }
         //SET THE SEMESTER
         selectedSemester = semesterMap.get(Number(semester))
         
