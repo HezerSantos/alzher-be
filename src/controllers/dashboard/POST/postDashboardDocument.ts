@@ -2,9 +2,9 @@ import axios, {AxiosError} from "axios";
 import FormData from "form-data";
 import { RequestHandler } from "express";
 import throwError from "../../../helpers/errorHelper";
-import prisma from "../../../config/prisma";
 import crypto from 'crypto';
 import dotenv from 'dotenv'
+import prisma from "../../../config/prisma";
 
 dotenv.config()
 
