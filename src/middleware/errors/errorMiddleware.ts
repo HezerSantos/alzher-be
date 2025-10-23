@@ -15,7 +15,7 @@ const errorMiddleware: ErrorRequestHandler = (err, req, res, next) => {
         From: ${req.headers["user-agent"]}\n
       `)
     
-    
+    console.error(err)
     res.status(err.status || 500).json(err.json || {msg: "Internal Server Error", code: "INVALID_SERVER"});
 }
 
