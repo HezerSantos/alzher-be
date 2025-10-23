@@ -2,11 +2,13 @@ import { body } from 'express-validator'
 
 
 const categorySet = new Set([
-    "Leisure",
+    "Merchandise",
+    "Entertainment",
     "Subscriptions",
     "Dining",
     "Grocery",
-    "Transportation"
+    "Transportation",
+    "Bills"
 ])
 
 const validatePatchDashboardActivityItem = [

@@ -44,7 +44,7 @@ const getDashboardActivity: RequestHandler = async(req, res, next) => {
 
         const transactions = await prisma.transaction.findMany({
             where: whereOptions,
-            skip: ((page - 1) * pageSize) || 0,
+            skip: ((page - 1) * (pageSize || 10)) || 0,
             take: pageSize || 10,
             orderBy: { amount: 'desc' }
         })
