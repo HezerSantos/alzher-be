@@ -1,7 +1,7 @@
 import axios, {AxiosError} from "axios";
 import FormData from "form-data";
 import { RequestHandler } from "express";
-import fileType from 'file-type';
+import { fileTypeFromBuffer } from 'file-type';
 import throwError from "../../../helpers/errorHelper";
 import prisma from "../../../config/prisma";
 import crypto from 'crypto';
@@ -31,7 +31,7 @@ const postDashboardDocument: RequestHandler = async(req, res, next) => {
         const formData = new FormData()
 
         for (const file of files){
-            const type = await fileType.fileTypeFromBuffer(file.buffer)
+            const type = await fileTypeFromBuffer(file.buffer)
             if(type?.mime !== 'application/pdf' || type?.ext !== "pdf"){
                 throwError("Invalid Files", 400, {msg: 'Invalid file type', code: "INVALID_FILE_TYPE"})
             }
