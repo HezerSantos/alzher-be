@@ -97,7 +97,7 @@ const postDashboardDocument: RequestHandler = async(req, res, next) => {
             if(axiosError.status === 400){
                 throwError("Invalid File Content", 400, {msg: "Unable to process statement", code: "INVALID_PROCESS"})
             } else if (axiosError.status === 401){
-                throwError("Internal Server Error", 500, {msg: "Internal Server Error", code: "INVALID_SERVER"})
+                throwError("Invalid ML_MICRO_SERVICE_KEY", 500, {msg: "Internal Server Error", code: "INVALID_SERVER"})
             } else {
                 throw error
             }
