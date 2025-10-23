@@ -4,7 +4,11 @@ import { RequestHandler } from "express";
 import throwError from "../../../helpers/errorHelper";
 import prisma from "../../../config/prisma";
 import crypto from 'crypto';
-// import fileTypeFromBuffer from "./helpers/fileTypeWrapper";
+import dotenv from 'dotenv'
+
+dotenv.config()
+
+const ML_MICRO_SERVICE_URL = process.env.NODE_ENV === "production"? process.env.ML_MICRO_SERVICE_URL : "http://localhost:5000"
 
 interface Transactons {
     transactionArray: {
@@ -50,7 +54,7 @@ const postDashboardDocument: RequestHandler = async(req, res, next) => {
         }
 
         try{
-            const res = await axios.post("http://localhost:5000/dashboard/scan/predict",
+            const res = await axios.post(`${ML_MICRO_SERVICE_URL}/dashboard/scan/predict`,
                 formData,
                 {
                     headers: {
