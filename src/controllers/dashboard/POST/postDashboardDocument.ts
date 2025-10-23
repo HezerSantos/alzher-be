@@ -4,7 +4,7 @@ import { RequestHandler } from "express";
 import throwError from "../../../helpers/errorHelper";
 import prisma from "../../../config/prisma";
 import crypto from 'crypto';
-import fileTypeFromBuffer from "./helpers/fileTypeWrapper";
+// import fileTypeFromBuffer from "./helpers/fileTypeWrapper";
 
 interface Transactons {
     transactionArray: {
@@ -31,6 +31,7 @@ const postDashboardDocument: RequestHandler = async(req, res, next) => {
         const formData = new FormData()
 
         for (const file of files){
+            const { fileTypeFromBuffer } = await import('file-type');
             const type = await fileTypeFromBuffer(file.buffer)
             if(type?.mime !== 'application/pdf' || type?.ext !== "pdf"){
                 throwError("Invalid Files", 400, {msg: 'Invalid file type', code: "INVALID_FILE_TYPE"})
