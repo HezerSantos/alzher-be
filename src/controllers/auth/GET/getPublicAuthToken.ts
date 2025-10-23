@@ -21,23 +21,23 @@ const blockedUserAgents: Set<string> = new Set(
   "RapidAPI/2.0"            // API marketplace, used to test multiple APIs, potentially for scraping
 ]
 )
-const AUTH_SECRET = String(process.env.AUTH_SECRET)
+const PUBLIC_AUTH_SECRET = String(process.env.PUBLIC_AUTH_SECRET)
 const getPublicAuthToken: RequestHandler = async(req, res, next) => {
     try{
         const origin = req.headers.origin || ''
         const userAgent = String(req.headers["user-agent"])
         if(origin !== (process.env.NODE_ENV === "production"? process.env.CLIENT_URL : "http://localhost:5173")){
-            throwError("Forbidden", 403, [{msg: "Unauthorized"}])
+            throwError("Forbidden", 403, {msg: "Unauthorized", code: "INVALID_CLEARANCE"})
             return
         }
         if(blockedUserAgents.has(userAgent) || !userAgent){
-            throwError("Forbidden", 403, [{msg: "Unauthorized"}])
+            throwError("Forbidden", 403, {msg: "Unauthorized", code: "INVALID_CLEARANCE"})
             return
         }
 
-        const authToken = jwt.sign({target: "guset"}, AUTH_SECRET, {expiresIn: '15m'})
+        const publicAuthToken = jwt.sign({target: "guset"}, PUBLIC_AUTH_SECRET, {expiresIn: '15m'})
 
-        res.cookie('__Secure-public-auth.access', authToken, {
+        res.cookie('__Secure-public-auth.access', publicAuthToken, {
             httpOnly: true, 
             secure: true, 
             maxAge: 15 * 1000 * 60, 

@@ -42,7 +42,8 @@ const verifyCsrf: VerifyCsrfType = (cookieCsrfToken, headerCsrfToken) => {
     const csrfCookie = decoded as DecodedType
 
     const csrfToken = transformCookie(csrfCookie.csrfToken, csrfCookie.key)
-    // console.log(csrfCookie.csrfToken)
+    // console.log(csrfToken)
+    // console.log()
     // console.log(headerCsrfToken)
 
     if(headerCsrfToken !== csrfToken){
@@ -56,13 +57,13 @@ const validateCsrf: RequestHandler = (req, res, next) => {
         const headerCsrfToken = String(req.headers['csrftoken'])
         const cookieCsrfToken = req.cookies['__Secure-auth.csrf']
         if(!headerCsrfToken || !cookieCsrfToken){
-            throwError("403 Forbidden", 403, [{msg: "Unauthorized"}])
+            throwError("403 Forbidden", 403, {msg: "Forbidden", code: "INVALID_PERMISSIONS"})
         }
 
         const match = verifyCsrf(cookieCsrfToken, headerCsrfToken)
 
         if(!match){
-            throwError("403 Forbidden", 403, [{msg: "Unauthorized"}])
+            throwError("403 Forbidden", 403, {msg: "Forbidden", code: "INVALID_PERMISSIONS"})
         }
 
         next()

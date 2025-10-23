@@ -1,0 +1,135 @@
+DOCUMENTATION
+
+
+ERRORS = [
+    401: [
+        {
+            code: "INVALID_ACCESS_TOKEN",
+            description: "Secure access token is not present or valid.",
+            routes: [
+                /api/dashboard/*
+            ]
+        },
+        {
+            code: "INVALID_ENTRY_TOKEN",
+            description: "Public access token is not present or valid.",
+            routes: [
+                /api/*,
+                excludes: [
+                    /api/auth/public
+                ]
+            ]
+        },
+        {
+            code: "INVALID_REFRESH_TOKEN",
+            description: "Secure refresh token is not present or valid.",
+            routes: [
+                /api/auth/secure/refresh
+            ]
+        },
+        {
+            code: "INVALID_CREDENTIALS",
+            description: "The provided credentials are invalid."
+            routes: [
+                /api/auth/secure/login
+            ]
+        },
+        {
+            code: "INVALID_SESSION",
+            description: "The user is not logged in",
+            routes: [
+                /api/auth/secure/validate
+            ]
+        }
+    ],
+    400: [
+        {
+            code: "INVALID_CREDENTIALS",
+            description: "The provided credentials are invalid or missing.",
+            routes: [
+                /api/auth/secure/*
+            ]
+        },
+        {
+            code: "INVALID_QUERY",
+            description: "The provided query parameters are invalid or missing.",
+            routes: [
+                /api/dashboard/overview
+            ]
+        },{
+            code: "INVALID_FILE_TYPE",
+            description: "The provided files have invalid types.",
+            routes: [
+                /api/dashboard/scan
+            ]
+        },
+        {
+            code: "INVALID_PROCESS",
+            description: "The provided response from FastAPI returned an empty array of transactions",
+            routes: [
+                /api/dashboard/scan
+            ]
+        },
+        {
+            code: "INVALID_BODY"
+            description: "The provided request body contains missing or invalid fields."
+            routes: [
+                /api/dashboard\/activity\/.*/
+            ]
+        }
+    ],
+    403: [
+        {
+            code: "INVALID_PERMISSIONS",
+            description: "CSRF token is not present or valid.",
+            routes: [
+                /api/*,
+                excludes: [
+                    /api/auth/public,
+                    /api/csrf
+                ]
+            ]
+        }
+    ],
+    409: [
+        {
+            code: "INVALID_DUPLICATE",
+            description: "Duplicate statement was uploaded,
+            routes: [
+                /api/dashboard/scan
+            ]
+        }
+    ],
+    413: [
+        {
+            code: "INVALID_UPLOAD",
+            description: "File size or limit has been exceeded or reached.",
+            routes: [
+                /api/dashboard/scan
+            ]
+        }
+    ],
+    429: [
+        {
+            code: "INVALID_DASHBOARD_LIMIT",
+            description: "Dashboard router rate limiter is reached.",
+            routes: [
+                /api/dashboard/*
+            ]
+        },
+        {
+            code: "INVALID_GLOBAL_LIMIT",
+            description: "Pre rate limiter is reached."
+            routes: [
+                /api/*
+            ]
+        }
+    ],
+    500: [
+        code: "INVALID_SERVER",
+        description: "Internal Server Error",
+        router: [
+            /api/*
+        ]
+    ]
+]
