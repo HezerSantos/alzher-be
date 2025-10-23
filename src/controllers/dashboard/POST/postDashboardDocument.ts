@@ -1,10 +1,10 @@
 import axios, {AxiosError} from "axios";
 import FormData from "form-data";
 import { RequestHandler } from "express";
-import { fileTypeFromBuffer } from 'file-type';
 import throwError from "../../../helpers/errorHelper";
 import prisma from "../../../config/prisma";
 import crypto from 'crypto';
+import fileTypeFromBuffer from "./helpers/fileTypeWrapper";
 
 interface Transactons {
     transactionArray: {
