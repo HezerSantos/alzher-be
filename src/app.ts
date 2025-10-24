@@ -16,17 +16,17 @@ import dashboardRouter from './routes/dashboard/dashboardRouter'
 import globalLimiter from './ratelimiters/global/globalRateLimiter'
 dotenv.config()
 const app = express()
-app.use("/robots.txt", robotsRouter)
+app.use("/robots.txt", globalLimiter, robotsRouter)
 app.set('trust proxy', 1)
 app.use(cookieParser)
 app.use(helmet)
 app.use(bodyParser)
 app.use(cors)
 
-app.use("/api/auth/public", publicAuthRouter)
+app.use("/api/auth/public", globalLimiter, publicAuthRouter)
 
 app.use(verifyPublicAuthToken)
-app.use("/api/csrf", csrfRouter)
+app.use("/api/csrf", globalLimiter, csrfRouter)
 
 app.use("/api/auth/secure", globalLimiter, validateCsrf, secureAuthRouter)
 app.use("/api/dashboard", globalLimiter, validateCsrf, verifyUser, dashboardRouter)
